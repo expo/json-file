@@ -52,9 +52,11 @@ function readAsync(file, opts) {
       }
     }
   }, function (err) {
-    var defaultValue = _getDefault(opts, 'cantReadFileDefault');
+    var defaultValue = cantReadFileDefault(opts);
     if (defaultValue === undefined) {
       throw JsonFileError("Can't read JSON file " + file, err);
+    } else {
+      return defaultValue;
     }
   });
 }
