@@ -39,7 +39,7 @@ function _getDefault(opts, field) {
   return ((opts && opts[field]) || DEFAULT_OPTS[field]);
 }
 
-function readFileAsync(file, opts) {
+function readAsync(file, opts) {
   return fs.promise.readFile(file, 'utf8').then(function (json) {
     try {
       return JSON.parse(json);
@@ -61,7 +61,7 @@ function readFileAsync(file, opts) {
 
 
 function getAsync(file, key, defaultValue) {
-  return readFileAsync(file).then(function (obj) {
+  return readAsync(file).then(function (obj) {
     if (defaultValue === undefined) {
       if (!_.has(obj, key)) {
         throw JsonFileError("No value for key path " + key + " in JSON object");
@@ -71,7 +71,7 @@ function getAsync(file, key, defaultValue) {
   });
 }
 
-function writeFileAsync(file, obj, opts) {
+function writeAsync(file, obj, opts) {
   var space = _getDefault(opts, 'space');
   try {
     var json = JSON.stringify(obj, null, space);
@@ -81,19 +81,30 @@ function writeFileAsync(file, obj, opts) {
   return fs.promise.writeFile(file, json, 'utf8');
 }
 
-function updateFileAsync(file, key, val, opts) {
+function updateAsync(file, key, val, opts) {
   // TODO: Consider implementing some kind of locking mechanism, but
-  return readFileAsync(file, opts).then(function (obj) {
+  // it's not critical for our use case, so we'll leave it out for now
+  return readAsync(file, opts).then(function (obj) {
     obj = _.set(obj, key, val);
-    return writeFileAsync(file, obj, opts).then(function () {
+    return writeAsync(file, obj, opts).then(function () {
+      return obj;
+    });
+  });
+}
+
+function mergeAsync(file, sources, opts) {
+  return readAsync(file, opts).then(function (obj) {
+    obj = _.assign(obj, sources);
+    return writeAsync(file, obj, opts).then(function () {
       return obj;
     });
   });
 }
 
 module.exports = {
-  readFileAsync: readFileAsync,
-  writeFileAsync: writeFileAsync,
+  readAsync: readAsync,
+  writeAsync: writeAsync,
   getAsync: getAsync,
-  updateFileAsync: updateFileAsync,
+  updateAsync: updateAsync,
+  mergeAsync: mergeAsync,
 };
