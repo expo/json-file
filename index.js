@@ -140,11 +140,13 @@ function file(file_, opts) {
   return new _File(file_, opts);
 }
 
-module.exports = {
+module.exports = file;
+_.assign(module.exports, {
   readAsync: readAsync,
   writeAsync: writeAsync,
   getAsync: getAsync,
   updateAsync: updateAsync,
   mergeAsync: mergeAsync,
   file: file,
-};
+  _File: _File,
+});
