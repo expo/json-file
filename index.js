@@ -103,10 +103,48 @@ function mergeAsync(file, sources, opts) {
   });
 }
 
+function _File(file, opts) {
+  this.file = file;
+  this.opts = opts;
+}
+
+_.assign(_File.prototype, {
+    _getOpts: function (opts) {
+      var opts_ = _.clone(this.opts);
+      return _.assign(opts_, opts);
+    },
+
+    readAsync: function (opts) {
+      return readAsync(this.file, this._getOpts(opts));
+    },
+
+    writeAsync: function (obj, opts) {
+      return writeAsync(this.file, obj, this._getOpts(opts));
+    },
+
+    getAsync: function (key, defaultValue) {
+      return getAsync(this.file, key, defaultValue);
+    },
+
+    updateAsync: function (key, val, opts) {
+      return updateAsync(this.file, key, val, this._getOpts(opts));
+    },
+
+    mergeAsync: function (sources, opts) {
+      return mergeAsync(this.file, sources, this._getOpts(opts));
+    },
+
+});
+
+function file(file_, opts) {
+  return new _File(file_, opts);
+}
+
 module.exports = {
   readAsync: readAsync,
   writeAsync: writeAsync,
   getAsync: getAsync,
   updateAsync: updateAsync,
   mergeAsync: mergeAsync,
+  file: file,
 };
