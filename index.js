@@ -110,7 +110,7 @@ function _File(file, opts) {
 
 _.assign(_File.prototype, {
     _getOpts: function (opts) {
-      var opts_ = _.clone(this.opts);
+      var opts_ = _.clone(this.opts || {});
       return _.assign(opts_, opts);
     },
 
