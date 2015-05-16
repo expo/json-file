@@ -144,7 +144,7 @@ _.assign(_File.prototype, {
     },
 
     deleteKeyAsync: function (key, opts) {
-      return deleteKeyAsync(this.file, key, this_getOpts(opts));
+      return deleteKeyAsync(this.file, key, this._getOpts(opts));
     },
 
 });
