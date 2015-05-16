@@ -36,7 +36,12 @@ function JsonFileError(message, err) {
 }
 
 function _getDefault(opts, field) {
-  return ((opts && opts[field]) || DEFAULT_OPTS[field]);
+  if (opts) {
+    if (opts[field] !== undefined) {
+      return opts[field];
+    }
+  }
+  return DEFAULT_OPTS[field];
 }
 
 function readAsync(file, opts) {
@@ -80,7 +85,9 @@ function writeAsync(file, obj, opts) {
   } catch (e) {
     throw JsonFileError("Couldn't JSON.stringify object", e);
   }
-  return fs.promise.writeFile(file, json, 'utf8');
+  return fs.promise.writeFile(file, json, 'utf8').then(function () {
+    return obj;
+  });
 }
 
 function updateAsync(file, key, val, opts) {
@@ -88,27 +95,36 @@ function updateAsync(file, key, val, opts) {
   // it's not critical for our use case, so we'll leave it out for now
   return readAsync(file, opts).then(function (obj) {
     obj = _.set(obj, key, val);
-    return writeAsync(file, obj, opts).then(function () {
-      return obj;
-    });
+    return writeAsync(file, obj, opts);
   });
 }
 
 function mergeAsync(file, sources, opts) {
   return readAsync(file, opts).then(function (obj) {
     obj = _.assign(obj, sources);
-    return writeAsync(file, obj, opts).then(function () {
-      return obj;
-    });
+    return writeAsync(file, obj, opts);
   });
 }
 
 function deleteKeyAsync(file, key, opts) {
   return readAsync(file, opts).then(function (obj) {
     delete obj[key];
-    return writeAsync(file, obj, opts).then(function () {
-      return obj;
-    });
+    return writeAsync(file, obj, opts);
+  });
+}
+
+function deleteKeysAsync(file, keys, opts) {
+  return readAsync(file, opts).then(function (obj) {
+    for (var i = 0; i < keys.length; i++) {
+      delete obj[keys[i]];
+    }
+    return writeAsync(file, obj, opts);
+  });
+}
+
+function rewriteAsync(file, opts) {
+  return readAsync(file, opts).then(function (obj) {
+    return writeAsync(file, obj, opts);
   });
 }
 
@@ -147,6 +163,14 @@ _.assign(_File.prototype, {
       return deleteKeyAsync(this.file, key, this._getOpts(opts));
     },
 
+    deleteKeysAsync: function (keys, opts) {
+      return deleteKeysAsync(this.file, keys, this._getOpts(opts));
+    },
+
+    rewriteAsync: function (opts) {
+      return rewriteAsync(this.file, this._getOpts(opts));
+    },
+
 });
 
 function file(file_, opts) {
@@ -161,6 +185,8 @@ _.assign(module.exports, {
   updateAsync: updateAsync,
   mergeAsync: mergeAsync,
   deleteKeyAsync: deleteKeyAsync,
+  deleteKeysAsync: deleteKeysAsync,
+  rewriteAsync: rewriteAsync,
   file: file,
   _File: _File,
 });
