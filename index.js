@@ -62,8 +62,8 @@ function readAsync(file, opts) {
 }
 
 
-function getAsync(file, key, defaultValue) {
-  return readAsync(file).then(function (obj) {
+function getAsync(file, key, defaultValue, opts) {
+  return readAsync(file, opts).then(function (obj) {
     if (defaultValue === undefined) {
       if (!_.has(obj, key)) {
         throw JsonFileError("No value for key path " + key + " in JSON object");
