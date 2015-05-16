@@ -131,8 +131,8 @@ _.assign(_File.prototype, {
       return writeAsync(this.file, obj, this._getOpts(opts));
     },
 
-    getAsync: function (key, defaultValue) {
-      return getAsync(this.file, key, defaultValue);
+    getAsync: function (key, defaultValue, opts) {
+      return getAsync(this.file, key, defaultValue, this._getOpts(opts));
     },
 
     updateAsync: function (key, val, opts) {
