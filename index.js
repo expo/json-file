@@ -103,6 +103,15 @@ function mergeAsync(file, sources, opts) {
   });
 }
 
+function deleteKeyAsync(file, key, opts) {
+  return readAsync(file, opts).then(function (obj) {
+    delete obj[key];
+    return writeAsync(file, obj, opts).then(function () {
+      return obj;
+    });
+  });
+}
+
 function _File(file, opts) {
   this.file = file;
   this.opts = opts;
@@ -134,6 +143,10 @@ _.assign(_File.prototype, {
       return mergeAsync(this.file, sources, this._getOpts(opts));
     },
 
+    deleteKeyAsync: function (key, opts) {
+      return deleteKeyAsync(this.file, key, this_getOpts(opts));
+    },
+
 });
 
 function file(file_, opts) {
@@ -147,6 +160,7 @@ _.assign(module.exports, {
   getAsync: getAsync,
   updateAsync: updateAsync,
   mergeAsync: mergeAsync,
+  deleteKeyAsync: deleteKeyAsync,
   file: file,
   _File: _File,
 });
