@@ -49,7 +49,7 @@ function readAsync(file, opts) {
     try {
       return JSON.parse(json);
     } catch (e) {
-      var defaultValue = _getDefault('default');
+      var defaultValue = _getDefault(opts, 'default');
       if (defaultValue === undefined) {
         throw JsonFileError("Error parsing JSON file " + file, e);
       } else {
@@ -68,7 +68,7 @@ function readAsync(file, opts) {
 
 
 function getAsync(file, key, defaultValue, opts) {
-  return readAsync(file, opts).then(function (obj) {
+  return readAsync(file, _.assign({cantReadFileDefault: {}}, opts)).then(function (obj) {
     if (defaultValue === undefined) {
       if (!_.has(obj, key)) {
         throw JsonFileError("No value for key path " + key + " in JSON object");
