@@ -1,6 +1,6 @@
 {
   "name": "@exponent/json-file",
-  "version": "2.7.0",
+  "version": "3.0.0",
   "description": "A module for reading, writing, and manipulating JSON files",
   "main": "index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/650Industries/json-file#readme",
   "dependencies": {
-    "instapromise": "^1.0.0",
+    "instapromise": "^2.0.1",
     "lodash-node": "^3.8.0"
   }
 }
