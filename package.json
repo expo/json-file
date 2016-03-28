@@ -22,5 +22,11 @@
   "dependencies": {
     "instapromise": "^2.0.2",
     "lodash": "^4.6.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^6.0.0",
+    "eslint": "^2.5.3",
+    "eslint-config-exponent": "^1.0.7",
+    "eslint-plugin-react": "^4.2.3"
   }
 }
