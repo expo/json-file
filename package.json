@@ -2,7 +2,7 @@
   "name": "@exponent/json-file",
   "version": "3.0.0",
   "description": "A module for reading, writing, and manipulating JSON files",
-  "main": "index.js",
+  "main": "jsonFile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
