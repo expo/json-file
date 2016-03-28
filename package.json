@@ -8,17 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/650Industries/json-file.git"
+    "url": "git+https://github.com/exponentjs/json-file.git"
   },
   "keywords": [
     "json"
   ],
-  "author": "exponent.team@gmail.com",
+  "author": "support@exponentjs.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/650Industries/json-file/issues"
+    "url": "https://github.com/exponentjs/json-file/issues"
   },
-  "homepage": "https://github.com/650Industries/json-file#readme",
+  "homepage": "https://github.com/exponentjs/json-file#readme",
   "dependencies": {
     "instapromise": "^2.0.2",
     "lodash": "^4.6.1"
