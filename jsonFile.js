@@ -1,6 +1,9 @@
-var _ = require('lodash');
-var fs = require('fs');
-var instapromise = require('instapromise');
+'use strict';
+
+require('instapromise');
+
+let fs = require('fs');
+let _ = require('lodash');
 
 var DEFAULT_OPTS = {
   space: 2,
@@ -128,65 +131,62 @@ function rewriteAsync(file, opts) {
   });
 }
 
-function _File(file, opts) {
-  this.file = file;
-  this.opts = opts;
+class JsonFile {
+  constructor(file, options) {
+    this.file = file;
+    this.options = options;
+  }
+
+  readAsync(options) {
+    return readAsync(this.file, this._getOptions(options));
+  }
+
+  writeAsync(object, options) {
+    return writeAsync(this.file, object, this._getOptions(options));
+  }
+
+  getAsync(key, defaultValue, options) {
+    return getAsync(this.file, key, defaultValue, this._getOptions(options));
+  }
+
+  updateAsync(key, value, options) {
+    return updateAsync(this.file, key, value, this._getOptions(options));
+  }
+
+  mergeAsync(sources, options) {
+    return mergeAsync(this.file, sources, this._getOptions(options));
+  }
+
+  deleteKeyAsync(key, options) {
+    return deleteKeyAsync(this.file, key, this._getOptions(options));
+  }
+
+  deleteKeysAsync(keys, options) {
+    return deleteKeysAsync(this.file, keys, this._getOptions(options));
+  }
+
+  rewriteAsync(options) {
+    return rewriteAsync(this.file, this._getOptions(options));
+  }
+
+  _getOptions(options) {
+    return Object.assign({}, this.options, options);
+  }
 }
 
-_.assign(_File.prototype, {
-    _getOpts: function (opts) {
-      var opts_ = _.clone(this.opts || {});
-      return _.assign(opts_, opts);
-    },
-
-    readAsync: function (opts) {
-      return readAsync(this.file, this._getOpts(opts));
-    },
-
-    writeAsync: function (obj, opts) {
-      return writeAsync(this.file, obj, this._getOpts(opts));
-    },
-
-    getAsync: function (key, defaultValue, opts) {
-      return getAsync(this.file, key, defaultValue, this._getOpts(opts));
-    },
-
-    updateAsync: function (key, val, opts) {
-      return updateAsync(this.file, key, val, this._getOpts(opts));
-    },
-
-    mergeAsync: function (sources, opts) {
-      return mergeAsync(this.file, sources, this._getOpts(opts));
-    },
-
-    deleteKeyAsync: function (key, opts) {
-      return deleteKeyAsync(this.file, key, this._getOpts(opts));
-    },
-
-    deleteKeysAsync: function (keys, opts) {
-      return deleteKeysAsync(this.file, keys, this._getOpts(opts));
-    },
-
-    rewriteAsync: function (opts) {
-      return rewriteAsync(this.file, this._getOpts(opts));
-    },
-
-});
-
 function file(file_, opts) {
-  return new _File(file_, opts);
+  return new JsonFile(file_, opts);
 }
 
 module.exports = file;
-_.assign(module.exports, {
-  readAsync: readAsync,
-  writeAsync: writeAsync,
-  getAsync: getAsync,
-  updateAsync: updateAsync,
-  mergeAsync: mergeAsync,
-  deleteKeyAsync: deleteKeyAsync,
-  deleteKeysAsync: deleteKeysAsync,
-  rewriteAsync: rewriteAsync,
-  file: file,
-  _File: _File,
+Object.assign(module.exports, {
+  readAsync,
+  writeAsync,
+  getAsync,
+  updateAsync,
+  mergeAsync,
+  deleteKeyAsync,
+  deleteKeysAsync,
+  rewriteAsync,
+  file,
 });
