@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/650Industries/json-file#readme",
   "dependencies": {
-    "instapromise": "^2.0.1",
-    "lodash-node": "^3.8.0"
+    "instapromise": "^2.0.2",
+    "lodash": "^4.6.1"
   }
 }

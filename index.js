@@ -1,4 +1,4 @@
-var _ = require('lodash-node');
+var _ = require('lodash');
 var fs = require('fs');
 var instapromise = require('instapromise');
 
