@@ -13,11 +13,10 @@ describe('JsonFile', () => {
     expect(JsonFile.writeAsync).toBeDefined();
   });
 
-  pit(`reads JSON from a file`, () => {
-    // require('fs');
-    let file = new JsonFile('./package.json');
-    return file.readAsync().then(object => {
-      expect(object.version).toBeDefined();
-    });
-  });
+  // pit(`reads JSON from a file`, () => {
+  //   let file = new JsonFile('./package.json');
+  //   return file.readAsync().then(object => {
+  //     expect(object.version).toBeDefined();
+  //   });
+  // });
 });
