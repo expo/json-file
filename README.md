@@ -61,7 +61,7 @@ See https://lodash.com/docs#get
 
 Writes out the given data to the file
 
-#### .updateAsync(key, val, [options])
+#### .setAsync(key, val, [options])
 
 Updates the file, inserting or updating the value for `<key>` with `<val>`
 
