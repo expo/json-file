@@ -4,6 +4,7 @@ require('instapromise');
 
 let fs = require('fs');
 let _ = require('lodash');
+let util = require('util');
 
 let JsonFileError = require('./JsonFileError');
 
@@ -30,6 +31,10 @@ class JsonFile {
 
   getAsync(key, defaultValue, options) {
     return getAsync(this.file, key, defaultValue, this._getOptions(options));
+  }
+
+  setAsync(key, value, options) {
+    return setAsync(this.file, key, value, this._getOptions(options));
   }
 
   updateAsync(key, value, options) {
@@ -100,7 +105,7 @@ function writeAsync(file, object, options) {
   return fs.promise.writeFile(file, json, 'utf8').then(() => object);
 }
 
-function updateAsync(file, key, value, options) {
+function setAsync(file, key, value, options) {
   // TODO: Consider implementing some kind of locking mechanism, but
   // it's not critical for our use case, so we'll leave it out for now
   return readAsync(file, options).then(object => {
@@ -108,6 +113,8 @@ function updateAsync(file, key, value, options) {
     return writeAsync(file, object, options);
   });
 }
+
+let updateAsync = util.deprecate(setAsync);
 
 function mergeAsync(file, sources, options) {
   return readAsync(file, options).then(object => {
@@ -175,6 +182,7 @@ Object.assign(JsonFile, {
   readAsync,
   writeAsync,
   getAsync,
+  setAsync,
   updateAsync,
   mergeAsync,
   deleteKeyAsync,
