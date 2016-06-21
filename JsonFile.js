@@ -5,14 +5,16 @@ require('instapromise');
 let fs = require('fs');
 let _ = require('lodash');
 let util = require('util');
+let JSON5 = require('json5');
 
 let JsonFileError = require('./JsonFileError');
 
 const DEFAULT_OPTIONS = {
-  space: 2,
-  default: undefined,
   badJsonDefault: undefined,
   cantReadFileDefault: undefined,
+  default: undefined,
+  json5: false,
+  space: 2,
 };
 
 class JsonFile {
@@ -65,7 +67,11 @@ class JsonFile {
 function readAsync(file, options) {
   return fs.promise.readFile(file, 'utf8').then(json => {
     try {
-      return JSON.parse(json);
+      if (options.json5) {
+        return JSON5.parse(json);
+      } else {
+        return JSON.parse(json);
+      }
     } catch (e) {
       let defaultValue = jsonParseErrorDefault(options);
       if (defaultValue === undefined) {
@@ -98,7 +104,12 @@ function getAsync(file, key, defaultValue, options) {
 function writeAsync(file, object, options) {
   var space = _getOption(options, 'space');
   try {
-    var json = JSON.stringify(object, null, space);
+    var json;
+    if (options.json5) {
+      json = JSON5.stringify(object, null, space);
+    } else {
+      json = JSON.stringify(object, null, space);
+    }
   } catch (e) {
     throw new JsonFileError(`Couldn't JSON.stringify object for file: ${file}`, e);
   }
