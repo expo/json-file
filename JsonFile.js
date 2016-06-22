@@ -65,9 +65,10 @@ class JsonFile {
 }
 
 function readAsync(file, options) {
+  var json5 = _getOption(options, 'json5');
   return fs.promise.readFile(file, 'utf8').then(json => {
     try {
-      if (options.json5) {
+      if (json5) {
         return JSON5.parse(json);
       } else {
         return JSON.parse(json);
@@ -103,9 +104,10 @@ function getAsync(file, key, defaultValue, options) {
 
 function writeAsync(file, object, options) {
   var space = _getOption(options, 'space');
+  var json5 = _getOption(options, 'json5');
   try {
     var json;
-    if (options.json5) {
+    if (json5) {
       json = JSON5.stringify(object, null, space);
     } else {
       json = JSON.stringify(object, null, space);
