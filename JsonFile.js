@@ -1,8 +1,6 @@
 'use strict';
 
-require('instapromise');
-
-let fs = require('fs');
+let fsp = require('mz/fs');
 let _ = require('lodash');
 let util = require('util');
 let JSON5 = require('json5');
@@ -66,7 +64,7 @@ class JsonFile {
 
 function readAsync(file, options) {
   var json5 = _getOption(options, 'json5');
-  return fs.promise.readFile(file, 'utf8').then(json => {
+  return fsp.readFile(file, 'utf8').then(json => {
     try {
       if (json5) {
         return JSON5.parse(json);
@@ -115,7 +113,7 @@ function writeAsync(file, object, options) {
   } catch (e) {
     throw new JsonFileError(`Couldn't JSON.stringify object for file: ${file}`, e);
   }
-  return fs.promise.writeFile(file, json, 'utf8').then(() => object);
+  return fsp.writeFile(file, json, 'utf8').then(() => object);
 }
 
 function setAsync(file, key, value, options) {
