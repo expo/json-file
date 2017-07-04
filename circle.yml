@@ -5,3 +5,7 @@ machine:
 dependencies:
   override:
     - npm prune && npm install
+
+test:
+  pre:
+    - npm run lint

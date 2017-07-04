@@ -64,29 +64,32 @@ class JsonFile {
 
 function readAsync(file, options) {
   var json5 = _getOption(options, 'json5');
-  return fsp.readFile(file, 'utf8').then(json => {
-    try {
-      if (json5) {
-        return JSON5.parse(json);
-      } else {
-        return JSON.parse(json);
+  return fsp.readFile(file, 'utf8').then(
+    json => {
+      try {
+        if (json5) {
+          return JSON5.parse(json);
+        } else {
+          return JSON.parse(json);
+        }
+      } catch (e) {
+        let defaultValue = jsonParseErrorDefault(options);
+        if (defaultValue === undefined) {
+          throw new JsonFileError(`Error parsing JSON file: ${file}`, e);
+        } else {
+          return defaultValue;
+        }
       }
-    } catch (e) {
-      let defaultValue = jsonParseErrorDefault(options);
+    },
+    error => {
+      let defaultValue = cantReadFileDefault(options);
       if (defaultValue === undefined) {
-        throw new JsonFileError(`Error parsing JSON file: ${file}`, e);
+        throw new JsonFileError(`Can't read JSON file: ${file}`, error);
       } else {
         return defaultValue;
       }
     }
-  }, error => {
-    let defaultValue = cantReadFileDefault(options);
-    if (defaultValue === undefined) {
-      throw new JsonFileError(`Can't read JSON file: ${file}`, error);
-    } else {
-      return defaultValue;
-    }
-  });
+  );
 }
 
 function getAsync(file, key, defaultValue, options) {
@@ -111,7 +114,10 @@ function writeAsync(file, object, options) {
       json = JSON.stringify(object, null, space);
     }
   } catch (e) {
-    throw new JsonFileError(`Couldn't JSON.stringify object for file: ${file}`, e);
+    throw new JsonFileError(
+      `Couldn't JSON.stringify object for file: ${file}`,
+      e
+    );
   }
   return fsp.writeFile(file, json, 'utf8').then(() => object);
 }

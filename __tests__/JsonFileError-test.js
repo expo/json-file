@@ -1,6 +1,6 @@
 'use strict';
 
-let JsonFileError = require('../JsonFileError');
+const JsonFileError = require('../JsonFileError');
 
 describe('JsonFileError', () => {
   it(`is an error`, () => {

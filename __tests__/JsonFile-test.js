@@ -1,10 +1,12 @@
 'use strict';
 
-let JsonFile = require('../JsonFile');
+const path = require('path');
+
+const JsonFile = require('../JsonFile');
 
 describe('JsonFile', () => {
   it(`is a class`, () => {
-    let file = new JsonFile('../package.json');
+    let file = new JsonFile(path.join(__dirname, '../package.json'));
     expect(file instanceof JsonFile).toBe(true);
   });
 
@@ -13,23 +15,24 @@ describe('JsonFile', () => {
     expect(JsonFile.writeAsync).toBeDefined();
   });
 
-  pit(`reads JSON from a file`, () => {
-    let file = new JsonFile('./package.json');
-    return file.readAsync().then(object => {
-      expect(object.version).toBeDefined();
-    });
+  it(`reads JSON from a file`, async () => {
+    let file = new JsonFile(path.join(__dirname, '../package.json'));
+    let object = await file.readAsync();
+    expect(object.version).toBeDefined();
   });
 
-  pit(`reads JSON statically from a file`, () => {
-    return JsonFile.readAsync('./package.json').then(object => {
-      expect(object.version).toBeDefined();
-    });
+  it(`reads JSON statically from a file`, async () => {
+    let object = await JsonFile.readAsync(
+      path.join(__dirname, '../package.json')
+    );
+    expect(object.version).toBeDefined();
   });
 
-  pit(`reads JSON5 from a file`, () => {
-    let file = new JsonFile('./test-json5.json', {json5: true});
-    return file.readAsync().then(object => {
-      expect(object.itParsedProperly).toBe(42);
+  it(`reads JSON5 from a file`, async () => {
+    let file = new JsonFile(path.join(__dirname, 'files/test-json5.json'), {
+      json5: true,
     });
+    let object = await file.readAsync();
+    expect(object.itParsedProperly).toBe(42);
   });
 });
