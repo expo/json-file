@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-
 const JsonFile = require('../JsonFile');
 
 describe('JsonFile', () => {
@@ -36,3 +35,8 @@ describe('JsonFile', () => {
     expect(object.itParsedProperly).toBe(42);
   });
 });
+
+
+describe('JsonFile race conditions', () => {
+
+}
