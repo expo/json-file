@@ -3,6 +3,8 @@
 let JsonFile = require('../JsonFile');
 let fs = require('mz/fs');
 let mock = require('mock-fs');
+let lockFile = require('lockfile')
+
 
 const j = JSON.stringify;
 
@@ -56,6 +58,20 @@ describe('JsonFile mockjs tests', () => {
     expect(fs.existsSync('./write-test.json')).toBe(true);
     await expect(file.readAsync()).resolves.toEqual(obj1);
   });
+
+  it(`rewrite async`, async () => {
+    expect(fs.existsSync('./write-test.json')).toBe(true);
+    let file = new JsonFile('./write-test.json', { json5: true });
+    expect(file.rewriteAsync()).resolves
+    expect(lockFile.checkSync('state.json.lock')).toBe(true)
+    expect(lockFile.checkSync('state.json.lock')).toBe(true)
+    expect(lockFile.checkSync('state.json.lock')).toBe(true)
+    expect(lockFile.checkSync('state.json.lock')).toBe(true)
+    expect(lockFile.checkSync('state.json.lock')).toBe(true)
+    expect(fs.existsSync('./write-test.json')).toBe(true);
+    await expect(file.readAsync()).resolves.toEqual(obj1);
+  });
+
 
   it(`changes a key in that file`, async () => {
     await expect(fs.existsSync('./write-test.json')).toBe(true);
