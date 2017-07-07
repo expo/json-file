@@ -5,8 +5,28 @@ let _ = require('lodash');
 let util = require('util');
 let JSON5 = require('json5');
 let writeFileAtomic = require('write-file-atomic');
+var lockFile = require('lockfile')
+require('instapromise')
+
 
 let JsonFileError = require('./JsonFileError');
+
+const LOCK_FILE_NAME = 'state.json.lock'
+
+
+
+const lockWrapper = (fn) => async (...args) => {
+  // Do not await this function! 
+  // Search for a lock, retrying it the lock is already taken
+  try {
+    await lockFile.lock.promise(LOCK_FILE_NAME, {wait: 3000})
+    const promise = await fn(...args)
+    await lockFile.unlockSync(LOCK_FILE_NAME)
+    return promise
+  } catch (e) {
+    console.error(e)
+  }
+}
 
 const DEFAULT_OPTIONS = {
   badJsonDefault: undefined,
@@ -32,39 +52,39 @@ class JsonFile {
   }
 
   readAsync(options) {
-    return readAsync(this.file, this._getOptions(options));
+    return lockWrapper(readAsync)(this.file, this._getOptions(options));
   }
 
   writeAsync(object, options) {
-    return writeAsync(this.file, object, this._getOptions(options));
+    return lockWrapper(writeAsync)(this.file, object, this._getOptions(options));
   }
 
   getAsync(key, defaultValue, options) {
-    return getAsync(this.file, key, defaultValue, this._getOptions(options));
+    return lockWrapper(getAsync)(this.file, key, defaultValue, this._getOptions(options));
   }
 
   setAsync(key, value, options) {
-    return setAsync(this.file, key, value, this._getOptions(options));
+    return lockWrapper(setAsync)(this.file, key, value, this._getOptions(options));
   }
 
   updateAsync(key, value, options) {
-    return updateAsync(this.file, key, value, this._getOptions(options));
+    return lockWrapper(updateAsync)(this.file, key, value, this._getOptions(options));
   }
 
   mergeAsync(sources, options) {
-    return mergeAsync(this.file, sources, this._getOptions(options));
+    return lockWrapper(mergeAsync)(this.file, sources, this._getOptions(options));
   }
 
   deleteKeyAsync(key, options) {
-    return deleteKeyAsync(this.file, key, this._getOptions(options));
+    return lockWrapper(deleteKeyAsync)(this.file, key, this._getOptions(options));
   }
 
   deleteKeysAsync(keys, options) {
-    return deleteKeysAsync(this.file, keys, this._getOptions(options));
+    return lockWrapper(deleteKeysAsync)(this.file, keys, this._getOptions(options));
   }
 
   rewriteAsync(options) {
-    return rewriteAsync(this.file, this._getOptions(options));
+    return lockWrapper(rewriteAsync)(this.file, this._getOptions(options));
   }
 
   _getOptions(options) {
@@ -205,7 +225,7 @@ function _getOption(options, field) {
   return DEFAULT_OPTIONS[field];
 }
 
-Object.assign(JsonFile, {
+const fns = {
   readAsync,
   writeAsync,
   getAsync,
@@ -215,6 +235,8 @@ Object.assign(JsonFile, {
   deleteKeyAsync,
   deleteKeysAsync,
   rewriteAsync,
-});
+}
+
+Object.assign(JsonFile, fns);
 
 module.exports = JsonFile;
