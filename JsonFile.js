@@ -4,10 +4,9 @@ let fsp = require('mz/fs');
 let _ = require('lodash');
 let util = require('util');
 let JSON5 = require('json5');
-let writeFileAtomic = require('write-file-atomic')
+let writeFileAtomic = require('write-file-atomic');
 
 let JsonFileError = require('./JsonFileError');
-
 
 const DEFAULT_OPTIONS = {
   badJsonDefault: undefined,
@@ -18,12 +17,13 @@ const DEFAULT_OPTIONS = {
 };
 
 // A promisified writeFileAtomic
-const wfap = (file, data) => new Promise((resolve, reject) => {
-  writeFileAtomic(file, data, (err) => {
-    reject(err)
-  })
-  resolve()
-})
+const wfap = (file, data) =>
+  new Promise((resolve, reject) => {
+    writeFileAtomic(file, data, err => {
+      if (err) reject();
+      else resolve();
+    });
+  });
 
 class JsonFile {
   constructor(file, options) {
