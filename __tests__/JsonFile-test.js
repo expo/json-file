@@ -1,7 +1,10 @@
 'use strict';
 
-const path = require('path');
-const JsonFile = require('../JsonFile');
+let JsonFile = require('../JsonFile');
+let fs = require('mz/fs');
+let mock = require('mock-fs');
+
+const j = JSON.stringify;
 
 describe('JsonFile', () => {
   it(`is a class`, () => {
@@ -36,7 +39,29 @@ describe('JsonFile', () => {
   });
 });
 
+let obj1 = { x: 1 };
+describe('JsonFile mockjs tests', () => {
+  beforeAll(() => {
+    mock();
+  });
 
-describe('JsonFile race conditions', () => {
+  afterAll(() => {
+    mock.restore();
+  });
 
-}
+  it(`writes JSON to a file`, async () => {
+    expect(fs.existsSync('./write-test.json')).toBe(false);
+    let file = new JsonFile('./write-test.json', { json5: true });
+    await file.writeAsync(obj1);
+    expect(fs.existsSync('./write-test.json')).toBe(true);
+    await expect(file.readAsync()).resolves.toEqual(obj1);
+  });
+
+  it(`changes a key in that file`, async () => {
+    await expect(fs.existsSync('./write-test.json')).toBe(true);
+    let file = new JsonFile('./write-test.json', { json5: true });
+    await expect(file.setAsync('x', 1)).resolves;
+    // await setAsync('y', 30)
+    await expect(file.readAsync()).resolves.toEqual({ x: 2 });
+  });
+});
