@@ -2,31 +2,14 @@
 
 let fsp = require('mz/fs');
 let _ = require('lodash');
+let path = require('path');
 let util = require('util');
 let JSON5 = require('json5');
 let writeFileAtomic = require('write-file-atomic');
-var lockFile = require('lockfile')
-require('instapromise')
-
+var lockFile = require('lockfile');
+require('instapromise');
 
 let JsonFileError = require('./JsonFileError');
-
-const LOCK_FILE_NAME = 'state.json.lock'
-
-
-
-const lockWrapper = (fn) => async (...args) => {
-  // Do not await this function! 
-  // Search for a lock, retrying it the lock is already taken
-  try {
-    await lockFile.lock.promise(LOCK_FILE_NAME, {wait: 3000})
-    const promise = await fn(...args)
-    await lockFile.unlockSync(LOCK_FILE_NAME)
-    return promise
-  } catch (e) {
-    console.error(e)
-  }
-}
 
 const DEFAULT_OPTIONS = {
   badJsonDefault: undefined,
@@ -45,6 +28,20 @@ const wfap = (file, data) =>
     });
   });
 
+const lockWrapper = fn => async (file, ...args) => {
+  // Do not await this function!
+  // Search for a lock, retrying it the lock is already taken
+  try {
+    const lockFileName = file + '.lock';
+    // The options are fairly arbitrary
+    await lockFile.lock.promise(lockFileName, { wait: 5000, retries: 500, pollPeriod: 50, retryWait: 50 });
+    const promise = await fn(file, ...args);
+    await lockFile.unlockSync(lockFileName);
+    return promise;
+  } catch (e) {
+    console.error(e);
+  }
+};
 class JsonFile {
   constructor(file, options) {
     this.file = file;
@@ -56,31 +53,62 @@ class JsonFile {
   }
 
   writeAsync(object, options) {
-    return lockWrapper(writeAsync)(this.file, object, this._getOptions(options));
+    return lockWrapper(writeAsync)(
+      this.file,
+      object,
+      this._getOptions(options)
+    );
   }
 
   getAsync(key, defaultValue, options) {
-    return lockWrapper(getAsync)(this.file, key, defaultValue, this._getOptions(options));
+    return lockWrapper(getAsync)(
+      this.file,
+      key,
+      defaultValue,
+      this._getOptions(options)
+    );
   }
 
   setAsync(key, value, options) {
-    return lockWrapper(setAsync)(this.file, key, value, this._getOptions(options));
+    return lockWrapper(setAsync)(
+      this.file,
+      key,
+      value,
+      this._getOptions(options)
+    );
   }
 
   updateAsync(key, value, options) {
-    return lockWrapper(updateAsync)(this.file, key, value, this._getOptions(options));
+    return lockWrapper(updateAsync)(
+      this.file,
+      key,
+      value,
+      this._getOptions(options)
+    );
   }
 
   mergeAsync(sources, options) {
-    return lockWrapper(mergeAsync)(this.file, sources, this._getOptions(options));
+    return lockWrapper(mergeAsync)(
+      this.file,
+      sources,
+      this._getOptions(options)
+    );
   }
 
   deleteKeyAsync(key, options) {
-    return lockWrapper(deleteKeyAsync)(this.file, key, this._getOptions(options));
+    return lockWrapper(deleteKeyAsync)(
+      this.file,
+      key,
+      this._getOptions(options)
+    );
   }
 
   deleteKeysAsync(keys, options) {
-    return lockWrapper(deleteKeysAsync)(this.file, keys, this._getOptions(options));
+    return lockWrapper(deleteKeysAsync)(
+      this.file,
+      keys,
+      this._getOptions(options)
+    );
   }
 
   rewriteAsync(options) {
@@ -235,7 +263,7 @@ const fns = {
   deleteKeyAsync,
   deleteKeysAsync,
   rewriteAsync,
-}
+};
 
 Object.assign(JsonFile, fns);
 
