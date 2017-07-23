@@ -136,9 +136,9 @@ describe('JsonFile mockjs race condition integration test', () => {
     for (var i = 0; i < 50; i++) {
       await file.writeAsync({});
       let baseObj = {};
-      for (var i = 0; i < 20; i++) {
-        baseObj = _.extend(baseObj, { [i]: i });
-        file.setAsync(i, i);
+      for (var j = 0; j < 20; j++) {
+        baseObj = _.extend(baseObj, { [j]: j });
+        await file.setAsync(j, j);
       }
       const json = await file.readAsync();
       expect(json).toEqual(baseObj);
