@@ -8,8 +8,6 @@ const lockFile = require('lockfile');
 const cp = require('child_process');
 const _ = require('lodash');
 
-const j = JSON.stringify;
-
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 60 * 1000;
 
 describe('JsonFile Basic Tests', () => {

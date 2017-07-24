@@ -1,15 +1,16 @@
 'use strict';
 
-let fsp = require('mz/fs');
-let _ = require('lodash');
-let path = require('path');
-let util = require('util');
-let JSON5 = require('json5');
-let writeFileAtomic = require('write-file-atomic');
-var lockFile = require('lockfile');
-require('instapromise');
+const fsp = require('mz/fs');
+const _ = require('lodash');
+const path = require('path');
+const util = require('util');
+const JSON5 = require('json5');
+const writeFileAtomic = require('write-file-atomic');
+const lockFile = require('lockfile');
+const promisify = require('util.promisify');
+const JsonFileError = require('./JsonFileError');
 
-let JsonFileError = require('./JsonFileError');
+const lockAsync = promisify(lockFile.lock);
 
 const DEFAULT_OPTIONS = {
   badJsonDefault: undefined,
@@ -20,28 +21,32 @@ const DEFAULT_OPTIONS = {
 };
 
 // A promisified writeFileAtomic
-const wfap = (file, data) =>
+const writeFileAtomicAsync = (file, data) =>
   new Promise((resolve, reject) => {
     writeFileAtomic(file, data, err => {
-      if (err) reject();
+      if (err) reject(err);
       else resolve();
     });
   });
 
-const lockWrapper = fn => async (file, ...args) => {
-  // Do not await this function!
-  // Search for a lock, retrying it the lock is already taken
+const callWithLock = async (file, fn) => {
+  let result;
+  const lockFileName = file + '.lock';
+  // These options are fairly arbitrary
+  await lockAsync(lockFileName, {
+    wait: 5000,
+    retries: 500,
+    pollPeriod: 50,
+    retryWait: 50,
+  });
   try {
-    const lockFileName = file + '.lock';
-    // The options are fairly arbitrary
-    await lockFile.lock.promise(lockFileName, { wait: 5000, retries: 500, pollPeriod: 50, retryWait: 50 });
-    const promise = await fn(file, ...args);
-    await lockFile.unlockSync(lockFileName);
-    return promise;
-  } catch (e) {
-    console.error(e);
+    result = await fn();
+  } finally {
+    lockFile.unlockSync(lockFileName);
   }
+  return result;
 };
+
 class JsonFile {
   constructor(file, options) {
     this.file = file;
@@ -49,70 +54,57 @@ class JsonFile {
   }
 
   readAsync(options) {
-    return lockWrapper(readAsync)(this.file, this._getOptions(options));
+    return callWithLock(this.file, () =>
+      readAsync(this.file, this._getOptions(options))
+    );
   }
 
   writeAsync(object, options) {
-    return lockWrapper(writeAsync)(
-      this.file,
-      object,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      writeAsync(this.file, object, this._getOptions(options))
     );
   }
 
   getAsync(key, defaultValue, options) {
-    return lockWrapper(getAsync)(
-      this.file,
-      key,
-      defaultValue,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      getAsync(this.file, key, defaultValue, this._getOptions(options))
     );
   }
 
   setAsync(key, value, options) {
-    return lockWrapper(setAsync)(
-      this.file,
-      key,
-      value,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      setAsync(this.file, key, value, this._getOptions(options))
     );
   }
 
   updateAsync(key, value, options) {
-    return lockWrapper(updateAsync)(
-      this.file,
-      key,
-      value,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      updateAsync(this.file, key, value, this._getOptions(options))
     );
   }
 
   mergeAsync(sources, options) {
-    return lockWrapper(mergeAsync)(
-      this.file,
-      sources,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      mergeAsync(this.file, sources, this._getOptions(options))
     );
   }
 
   deleteKeyAsync(key, options) {
-    return lockWrapper(deleteKeyAsync)(
-      this.file,
-      key,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      deleteKeyAsync(this.file, key, this._getOptions(options))
     );
   }
 
   deleteKeysAsync(keys, options) {
-    return lockWrapper(deleteKeysAsync)(
-      this.file,
-      keys,
-      this._getOptions(options)
+    return callWithLock(this.file, () =>
+      deleteKeysAsync(this.file, keys, this._getOptions(options))
     );
   }
 
   rewriteAsync(options) {
-    return lockWrapper(rewriteAsync)(this.file, this._getOptions(options));
+    return callWithLock(this.file, () =>
+      rewriteAsync(this.file, this._getOptions(options))
+    );
   }
 
   _getOptions(options) {
@@ -177,7 +169,7 @@ function writeAsync(file, object, options) {
       e
     );
   }
-  return wfap(file, json).then(() => object);
+  return writeFileAtomicAsync(file, json).then(() => object);
 }
 
 function setAsync(file, key, value, options) {
@@ -265,6 +257,10 @@ const fns = {
   rewriteAsync,
 };
 
-Object.assign(JsonFile, fns);
+const lockedFns = _.mapValues(fns, fn => (file, ...args) =>
+  callWithLock(file, () => fn(file, ...args))
+);
+
+Object.assign(JsonFile, lockedFns);
 
 module.exports = JsonFile;
