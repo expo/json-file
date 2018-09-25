@@ -1,2 +1,6 @@
-# json-file [![CircleCI](https://circleci.com/gh/expo/json-file.svg?style=svg)](https://circleci.com/gh/expo/json-file)
-A library for reading and writing JSON files.
+# json-file
+
+`@expo/json-file` has moved! It's now part of the [Expo CLI monorepo](https://github.com/expo/expo-cli).
+
+- [Issues](https://github.com/expo/expo-cli/issues)
+- [Contributing](https://github.com/expo/expo-cli/blob/master/CONTRIBUTING.md)
